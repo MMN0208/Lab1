@@ -27,7 +27,6 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 typedef enum {
-	NO_COLOR,
 	RED,
 	GREEN,
 	YELLOW
@@ -37,7 +36,12 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define		DELAY_TIME	 1000 // 1 second delay
+#define		DELAY_TIME			1000 // 1 second delay
+#define		TOGGLE_PERIOD		2
+#define		RED_LIGHT_TIME		5
+#define		GREEN_LIGHT_TIME	3
+#define		YELLOW_LIGHT_TIME	2
+#define 	COUNTER_MAX			255 // 8-bit counter
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,7 +52,6 @@ typedef enum {
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static trafficLightColor trafficLight1, trafficLight2;
 static uint8_t secCounter = 0; // second counter for exercises below
 /* USER CODE END PV */
 
@@ -86,134 +89,92 @@ void exercise1(void) {
 		turnLedOn(LED_RED_GPIO_Port, LED_RED_Pin);
 		turnLedOff(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
 	}
-	else if(secCounter % 2 == 0) { // toggle both LEDs every 2s
+	else if(secCounter % TOGGLE_PERIOD == 0) { // toggle both LEDs every period
 		toggleLed(LED_RED_GPIO_Port, LED_RED_Pin);
 		toggleLed(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
 	}
 	secCounter++;
-	if(secCounter >= 255) secCounter = 1; // prevent the 8-bit counter from overflowing
+	if(secCounter >= COUNTER_MAX) secCounter = 1; // prevent the 8-bit counter from overflowing
 }
 
 void trafficLight1State(trafficLightColor trafficLight1) {
 	switch(trafficLight1) {
 	case RED: {
-		HAL_GPIO_WritePin (LED_RED_GPIO_Port , LED_RED_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin (LED_YELLOW_GPIO_Port , LED_YELLOW_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+		turnLedOn(LED_RED_GPIO_Port , LED_RED_Pin);
+		turnLedOff(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin);
+		turnLedOff(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
 		break;
 	}
 	case YELLOW: {
-		HAL_GPIO_WritePin (LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin (LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+		turnLedOff(LED_RED_GPIO_Port , LED_RED_Pin);
+		turnLedOn(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin);
+		turnLedOff(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
 		break;
 	}
 	case GREEN: {
-		HAL_GPIO_WritePin (LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+		turnLedOff(LED_RED_GPIO_Port , LED_RED_Pin);
+		turnLedOff(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin);
+		turnLedOn(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
 		break;
 	}
-	case NO_COLOR: {
-		HAL_GPIO_WritePin (LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
-		break;
-	}
+	default: break;
 	}
 }
 
 void trafficLight2State(trafficLightColor trafficLight2) {
 	switch(trafficLight2) {
 	case RED: {
-		HAL_GPIO_WritePin (LED_RED_2_GPIO_Port , LED_RED_2_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin (LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin, GPIO_PIN_SET);
+		turnLedOn(LED_RED_2_GPIO_Port , LED_RED_2_Pin);
+		turnLedOff(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin);
+		turnLedOff(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin);
 		break;
 	}
 	case YELLOW: {
-		HAL_GPIO_WritePin (LED_RED_2_GPIO_Port, LED_RED_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_YELLOW_2_GPIO_Port, LED_YELLOW_2_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin (LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin, GPIO_PIN_SET);
+		turnLedOff(LED_RED_2_GPIO_Port , LED_RED_2_Pin);
+		turnLedOn(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin);
+		turnLedOff(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin);
 		break;
 	}
 	case GREEN: {
-		HAL_GPIO_WritePin (LED_RED_2_GPIO_Port, LED_RED_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_YELLOW_2_GPIO_Port, LED_YELLOW_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin, GPIO_PIN_RESET);
+		turnLedOff(LED_RED_2_GPIO_Port , LED_RED_2_Pin);
+		turnLedOff(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin);
+		turnLedOn(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin);
 		break;
 	}
-	case NO_COLOR: {
-		HAL_GPIO_WritePin (LED_RED_2_GPIO_Port, LED_RED_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_YELLOW_2_GPIO_Port, LED_YELLOW_2_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin (LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin, GPIO_PIN_SET);
-		break;
-	}
+	default: break;
 	}
 }
 
 void exercise2(void) {
-	switch(trafficLight1) {
-	case NO_COLOR: {
-		trafficLight1 = RED;
-		break;
+	if(secCounter < RED_LIGHT_TIME) {
+		trafficLight1State(RED);
 	}
-	case RED: {
-		trafficLight1State(trafficLight1);
-		HAL_Delay(5000);
-		trafficLight1 = GREEN;
-		break;
+	else if(secCounter < RED_LIGHT_TIME + GREEN_LIGHT_TIME) {
+		trafficLight1State(GREEN);
 	}
-	case GREEN: {
-		trafficLight1State(trafficLight1);
-		HAL_Delay(3000);
-		trafficLight1 = YELLOW;
-		break;
+	else {
+		trafficLight1State(YELLOW);
 	}
-	case YELLOW: {
-		trafficLight1State(trafficLight1);
-		HAL_Delay(2000);
-		trafficLight1 = RED;
-		break;
-	}
-	}
+	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + GREEN_LIGHT_TIME + YELLOW_LIGHT_TIME);
 }
 
 void exercise3(void) {
-	switch(trafficLight1) {
-	case NO_COLOR: {
-		trafficLight1 = RED;
-		trafficLight2 = GREEN;
-		break;
+	if(secCounter < RED_LIGHT_TIME) {
+		trafficLight1State(RED);
+		if(secCounter < GREEN_LIGHT_TIME) {
+			trafficLight2State(GREEN);
+		}
+		else trafficLight2State(YELLOW);
 	}
-	case RED: {
-		trafficLight1State(trafficLight1);
-		trafficLight2State(trafficLight2);
-		HAL_Delay(3000);
-		trafficLight2 = YELLOW;
-		trafficLight2State(trafficLight2);
-		HAL_Delay(2000);
-		trafficLight1 = GREEN;
-		break;
+	else if(secCounter < RED_LIGHT_TIME + GREEN_LIGHT_TIME) {
+		trafficLight1State(GREEN);
+		trafficLight2State(RED);
 	}
-	case GREEN: {
-		trafficLight1State(trafficLight1);
-		trafficLight2 = RED;
-		trafficLight2State(trafficLight2);
-		HAL_Delay(3000);
-		trafficLight1 = YELLOW;
-		break;
-
+	else {
+		trafficLight1State(YELLOW);
+		trafficLight2State(RED);
 	}
-	case YELLOW: {
-		trafficLight1State(trafficLight1);
-		trafficLight2State(trafficLight2);
-		HAL_Delay(2000);
-		trafficLight1 = RED;
-		trafficLight2 = GREEN;
-		break;
-	}
-	}
+	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + GREEN_LIGHT_TIME + YELLOW_LIGHT_TIME);
 }
 /* USER CODE END 0 */
 
@@ -253,8 +214,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	/* Exercise 1 */
-	exercise1();
+	/* Exercise 2 */
+	exercise3();
 	HAL_Delay(DELAY_TIME);
     /* USER CODE END WHILE */
 
