@@ -27,21 +27,31 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 typedef enum {
-	RED,
-	GREEN,
-	YELLOW
+	RED = 0x06,
+	GREEN = 0x03,
+	YELLOW = 0x05,
 } trafficLightColor;
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define		DELAY_TIME			1000 // 1 second delay
-#define		TOGGLE_PERIOD		2
-#define		RED_LIGHT_TIME		5
-#define		GREEN_LIGHT_TIME	3
-#define		YELLOW_LIGHT_TIME	2
-#define 	COUNTER_MAX			255 // 8-bit counter
+// Delay time
+#define	DELAY_TIME			1000 // 1 second delay
+
+// Toggle every period (in seconds)
+#define	TOGGLE_PERIOD		2
+
+// Traffic light configuration (in seconds)
+#define	GREEN_LIGHT_TIME	3
+#define	YELLOW_LIGHT_TIME	2
+#define	RED_LIGHT_TIME		GREEN_LIGHT_TIME + YELLOW_LIGHT_TIME
+
+// Seven segment
+#define SEVEN_SEG_VALUES	10
+
+// Counter max value
+#define COUNTER_MAX			255 // 8-bit counter
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,21 +63,37 @@ typedef enum {
 
 /* USER CODE BEGIN PV */
 static uint8_t secCounter = 0; // second counter for exercises below
+
+// Two traffic lights' state for 4-way configuration
+
+const uint8_t sevenSegValue[SEVEN_SEG_VALUES] = {
+	0x40, // 0
+	0x79, // 1
+	0x24, // 2
+	0x30, // 3
+	0x19, // 4
+	0x12, // 5
+	0x02, // 6
+	0x78, // 7
+	0x00, // 8
+	0x10, // 9
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-
 /* USER CODE BEGIN PFP */
 void turnLedOn(GPIO_TypeDef* port, uint16_t pin);
 void turnLedOff(GPIO_TypeDef* port, uint16_t pin);
 void toggleLed(GPIO_TypeDef* port, uint16_t pin);
+void display7SEG(int num);
 void exercise1(void);
 void exercise2(void);
-void trafficLight1State(trafficLightColor trafficLight1);
-void trafficLight2State(trafficLightColor trafficLight2);
+void trafficLight1Operation(trafficLightColor trafficLight1);
+void trafficLight2Operation(trafficLightColor trafficLight2);
 void exercise3(void);
+void exercise4(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -80,8 +106,15 @@ void turnLedOff(GPIO_TypeDef* port, uint16_t pin) {
 	HAL_GPIO_WritePin (port , pin, GPIO_PIN_SET);
 }
 
-void toggleLed(GPIO_TypeDef* port, uint16_t pin) {
-	HAL_GPIO_TogglePin(port, pin);
+void display7SEG(int num) {
+	uint8_t index = 0;
+	HAL_GPIO_WritePin(SEG_A_GPIO_Port, SEG_A_Pin, (sevenSegValue[num] >> index++) & 0x01);
+	HAL_GPIO_WritePin(SEG_B_GPIO_Port, SEG_B_Pin, (sevenSegValue[num] >> index++) & 0x01);
+	HAL_GPIO_WritePin(SEG_C_GPIO_Port, SEG_C_Pin, (sevenSegValue[num] >> index++) & 0x01);
+	HAL_GPIO_WritePin(SEG_D_GPIO_Port, SEG_D_Pin, (sevenSegValue[num] >> index++) & 0x01);
+	HAL_GPIO_WritePin(SEG_E_GPIO_Port, SEG_E_Pin, (sevenSegValue[num] >> index++) & 0x01);
+	HAL_GPIO_WritePin(SEG_F_GPIO_Port, SEG_F_Pin, (sevenSegValue[num] >> index++) & 0x01);
+	HAL_GPIO_WritePin(SEG_G_GPIO_Port, SEG_G_Pin, (sevenSegValue[num] >> index) & 0x01);
 }
 
 void exercise1(void) {
@@ -90,91 +123,88 @@ void exercise1(void) {
 		turnLedOff(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
 	}
 	else if(secCounter % TOGGLE_PERIOD == 0) { // toggle both LEDs every period
-		toggleLed(LED_RED_GPIO_Port, LED_RED_Pin);
-		toggleLed(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+		HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+		HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
 	}
 	secCounter++;
 	if(secCounter >= COUNTER_MAX) secCounter = 1; // prevent the 8-bit counter from overflowing
 }
 
-void trafficLight1State(trafficLightColor trafficLight1) {
-	switch(trafficLight1) {
-	case RED: {
-		turnLedOn(LED_RED_GPIO_Port , LED_RED_Pin);
-		turnLedOff(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin);
-		turnLedOff(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
-		break;
-	}
-	case YELLOW: {
-		turnLedOff(LED_RED_GPIO_Port , LED_RED_Pin);
-		turnLedOn(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin);
-		turnLedOff(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
-		break;
-	}
-	case GREEN: {
-		turnLedOff(LED_RED_GPIO_Port , LED_RED_Pin);
-		turnLedOff(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin);
-		turnLedOn(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
-		break;
-	}
-	default: break;
-	}
+void trafficLight1Operation(trafficLightColor trafficLight1) {
+	uint8_t index = 0;
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port , LED_RED_Pin, (trafficLight1 >> index++) & 0x01);
+	HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port , LED_YELLOW_Pin, (trafficLight1 >> index++) & 0x01);
+	HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, (trafficLight1 >> index) & 0x01);
 }
 
-void trafficLight2State(trafficLightColor trafficLight2) {
-	switch(trafficLight2) {
-	case RED: {
-		turnLedOn(LED_RED_2_GPIO_Port , LED_RED_2_Pin);
-		turnLedOff(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin);
-		turnLedOff(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin);
-		break;
-	}
-	case YELLOW: {
-		turnLedOff(LED_RED_2_GPIO_Port , LED_RED_2_Pin);
-		turnLedOn(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin);
-		turnLedOff(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin);
-		break;
-	}
-	case GREEN: {
-		turnLedOff(LED_RED_2_GPIO_Port , LED_RED_2_Pin);
-		turnLedOff(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin);
-		turnLedOn(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin);
-		break;
-	}
-	default: break;
-	}
+void trafficLight2Operation(trafficLightColor trafficLight2) {
+	uint8_t index = 0;
+	HAL_GPIO_WritePin(LED_RED_2_GPIO_Port , LED_RED_2_Pin, (trafficLight2 >> index++) & 0x01);
+	HAL_GPIO_WritePin(LED_YELLOW_2_GPIO_Port , LED_YELLOW_2_Pin, (trafficLight2 >> index++) & 0x01);
+	HAL_GPIO_WritePin(LED_GREEN_2_GPIO_Port, LED_GREEN_2_Pin, (trafficLight2 >> index) & 0x01);
 }
 
 void exercise2(void) {
 	if(secCounter < RED_LIGHT_TIME) {
-		trafficLight1State(RED);
+		trafficLight1Operation(RED);
 	}
 	else if(secCounter < RED_LIGHT_TIME + GREEN_LIGHT_TIME) {
-		trafficLight1State(GREEN);
+		trafficLight1Operation(GREEN);
 	}
 	else {
-		trafficLight1State(YELLOW);
+		trafficLight1Operation(YELLOW);
 	}
-	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + GREEN_LIGHT_TIME + YELLOW_LIGHT_TIME);
+	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + RED_LIGHT_TIME);
 }
 
 void exercise3(void) {
 	if(secCounter < RED_LIGHT_TIME) {
-		trafficLight1State(RED);
+		trafficLight1Operation(RED);
 		if(secCounter < GREEN_LIGHT_TIME) {
-			trafficLight2State(GREEN);
+			trafficLight2Operation(GREEN);
 		}
-		else trafficLight2State(YELLOW);
+		else {
+			trafficLight2Operation(YELLOW);
+		}
 	}
 	else if(secCounter < RED_LIGHT_TIME + GREEN_LIGHT_TIME) {
-		trafficLight1State(GREEN);
-		trafficLight2State(RED);
+		trafficLight1Operation(GREEN);
+		trafficLight2Operation(RED);
 	}
 	else {
-		trafficLight1State(YELLOW);
-		trafficLight2State(RED);
+		trafficLight1Operation(YELLOW);
+		trafficLight2Operation(RED);
 	}
-	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + GREEN_LIGHT_TIME + YELLOW_LIGHT_TIME);
+	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + RED_LIGHT_TIME);
+}
+
+void exercise4(void) {
+	if(secCounter >= 10) secCounter = 0;
+	display7SEG(secCounter++);
+}
+
+void exercise5(void) {
+	if(secCounter < RED_LIGHT_TIME) {
+		trafficLight1Operation(RED);
+		if(secCounter < GREEN_LIGHT_TIME) {
+			trafficLight2Operation(GREEN);
+		}
+		else {
+			trafficLight2Operation(YELLOW);
+		}
+		display7SEG(RED_LIGHT_TIME - secCounter);
+	}
+	else if(secCounter < RED_LIGHT_TIME + GREEN_LIGHT_TIME) {
+		trafficLight1Operation(GREEN);
+		trafficLight2Operation(RED);
+		display7SEG(RED_LIGHT_TIME + GREEN_LIGHT_TIME - secCounter);
+	}
+	else {
+		trafficLight1Operation(YELLOW);
+		trafficLight2Operation(RED);
+		display7SEG(RED_LIGHT_TIME + RED_LIGHT_TIME - secCounter);
+	}
+	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + RED_LIGHT_TIME);
 }
 /* USER CODE END 0 */
 
@@ -214,8 +244,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	/* Exercise 2 */
-	exercise3();
+	/* Exercise 4 */
+	exercise5();
 	HAL_Delay(DELAY_TIME);
     /* USER CODE END WHILE */
 
@@ -271,10 +301,15 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LED_RED_Pin|LED_YELLOW_Pin|LED_GREEN_Pin|LED_RED_2_Pin
                           |LED_YELLOW_2_Pin|LED_GREEN_2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, SEG_A_Pin|SEG_B_Pin|SEG_C_Pin|SEG_D_Pin
+                          |SEG_E_Pin|SEG_F_Pin|SEG_G_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : LED_RED_Pin LED_YELLOW_Pin LED_GREEN_Pin LED_RED_2_Pin
                            LED_YELLOW_2_Pin LED_GREEN_2_Pin */
@@ -284,6 +319,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SEG_A_Pin SEG_B_Pin SEG_C_Pin SEG_D_Pin
+                           SEG_E_Pin SEG_F_Pin SEG_G_Pin */
+  GPIO_InitStruct.Pin = SEG_A_Pin|SEG_B_Pin|SEG_C_Pin|SEG_D_Pin
+                          |SEG_E_Pin|SEG_F_Pin|SEG_G_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
