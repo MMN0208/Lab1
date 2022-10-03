@@ -110,7 +110,7 @@ void completeClock(void) {
 	}
 	if(minCounter == 60) {
 		minCounter = 0;
-		hourCounter = (hourCounter + 1) % 12;
+		hourCounter = (hourCounter + 1) % NUM_OF_LEDS;
 	}
 	clearAllClock();
 	setNumberOnClock(secCounter / TIME_TO_NEXT_LED);
