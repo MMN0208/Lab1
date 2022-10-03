@@ -154,7 +154,7 @@ void exercise2(void) {
 	else {
 		trafficLight1Operation(YELLOW);
 	}
-	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + RED_LIGHT_TIME);
+	secCounter = (secCounter + 1) % (RED_LIGHT_TIME + RED_LIGHT_TIME); // RED + GRN + YEL = RED + RED
 }
 
 void exercise3(void) {
