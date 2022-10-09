@@ -86,7 +86,6 @@ static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 void turnLedOn(GPIO_TypeDef* port, uint16_t pin);
 void turnLedOff(GPIO_TypeDef* port, uint16_t pin);
-void toggleLed(GPIO_TypeDef* port, uint16_t pin);
 void display7SEG(int num);
 void exercise1(void);
 void exercise2(void);

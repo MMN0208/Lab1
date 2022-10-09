@@ -26,11 +26,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define	DELAY_TIME			1000 // 1 second delay
-#define NUM_OF_LEDS			12
-#define TIME_TO_NEXT_LED	5  // 5 seconds/minutes to switch from one led to the next one
-#define LED_ON				0x00
-#define LED_OFF				0x01
+#define	DELAY_TIME				1000 // 1 second delay
+#define NUM_OF_LEDS				12
+#define NUM_OF_HOUR_INDICES		12
+#define TIME_TO_NEXT_LED		5  // 5 seconds/minutes to switch from one led to the next one
+#define LED_ON					0x00
+#define LED_OFF					0x01
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
